@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Patrick+Hand&display=swap"
+    rel="stylesheet">
 
 <head>
     <meta charset="UTF-8">
@@ -10,8 +15,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <script defer src="main.js"></script>
+   
 </head>
-
 <body>
     <section class="main">
         <div class="top-bar">
@@ -152,7 +157,7 @@
             <div class="content">
                 <h1>50% OFF</h1>
                 <h2>For Download App iCafe</h2>
-                <h4>Only  from 1st Jan to 30th Jan 2045</h4>
+                <h4>Only from 1st Jan to 30th Jan 2045</h4>
                 <form action="">
                     <input type="text" placeholder="Your Email">
                     <button>Download now</button>
@@ -324,30 +329,48 @@
     </footer>
     <div id="view-cart-button" class="view-cart-button">
         <span>🛒</span>
-      </div>
-      
+    </div>
+
     <div class="top-scroller">
         <span>^</span>
     </div>
     <!-- drink detail model -->
     <div id="drink-detail-modal" class="drink-detail-modal" style="display: none;">
         <div class="modal-content">
-            <span id="close-modal" class="close-button">&times;</span>
+           <div class="wrapContent">
+            <div>
+                <span id="close-modal" class="close-button">&times;</span>
+            </div>
             <img id="detail-image" src="" alt="Drink Image" class="modal-image">
             <h3 id="detail-name"></h3>
-            <p id="detail-description"></p>
+            <span>Thành phần: <p style="display: inline-block;" id="detail-description"></p></span>
             <p id="detail-price"></p>
             <p id="detail-sale"></p>
-            <button id="add-to-cart-button" class="add-to-cart-button">Add to Cart</button>
+            <button id="add-to-cart-button" class="add-to-cart-button">Thêm vào giỏ hàng</button>
+           </div>
         </div>
     </div>
+
+    
+
+    <div id="cart-message" class="cart-message">
+        <span id="cart-message-text"></span>
+        <div class="progress-bar" id="cart-progress"></div>
+      </div>
+      
+
+      <div class="modal-checkout"></div>
     <!-- cart  -->
     <div id="cart-modal" class="cart-modal" style="display: none;">
         <div class="modal-content">
             <span id="close-cart-modal" class="close-button">&times;</span>
-            <h3>Your Order</h3>
+            <h3 style="margin-bottom: 15px;">Đơn đặt hàng của bạn</h3>
             <div id="cart-items-container"></div>
-            <button id="checkout-button" class="checkout-button">Checkout</button>
+            <div class="wrapInput">
+                <input  type="text" id="name" name="name" placeholder="Nhập tên của bạn" />
+            <input  type="number" id="phone" name="phone" placeholder="Nhập số điện thoại" />
+            </div>
+            <button id="checkout-button" class="checkout-button">Thanh toán</button>
         </div>
     </div>
 

@@ -48,11 +48,12 @@ function loadCategoriesAndDrinks() {
             button.setAttribute("data-category-id", category.id);
             button.className = "category-button";
             button.onclick = () => {
-              document.querySelectorAll(".category-button").forEach(btn => btn.classList.remove("selected"));
+              document
+                .querySelectorAll(".category-button")
+                .forEach((btn) => btn.classList.remove("selected"));
               button.classList.add("selected");
               loadDrinksByCategory(category.id);
             };
-            
 
             categoryContainer.appendChild(button);
 
@@ -74,26 +75,39 @@ function loadCategoriesAndDrinks() {
 function loadDrinksByCategory(categoryId) {
   const dbRef = ref(db);
 
+  // Hiển thị Skeleton loader trước khi dữ liệu được tải
+  const drinkContainer = document.getElementById("drink-container");
+  drinkContainer.innerHTML = ""; // Clear previous content
+  for (let i = 0; i < 5; i++) {
+    // Hiển thị 5 skeleton
+    const skeletonCard = document.createElement("div");
+    skeletonCard.className = "drink-card";
+    skeletonCard.innerHTML = `
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-price"></div>
+      <div class="skeleton skeleton-sale"></div>
+    `;
+    drinkContainer.appendChild(skeletonCard);
+  }
+
   get(child(dbRef, "drink"))
     .then((snapshot) => {
       if (snapshot.exists()) {
         const drinks = snapshot.val();
-        const drinkContainer = document.getElementById("drink-container");
-        drinkContainer.innerHTML = ""; // Xóa sản phẩm cũ
+        drinkContainer.innerHTML = ""; // Xóa skeleton
 
-        // Hiển thị sản phẩm theo danh mục
         drinks.forEach((drink) => {
           if (drink && drink.category_id === categoryId) {
             const drinkCard = document.createElement("div");
             drinkCard.className = "drink-card";
 
             drinkCard.innerHTML = `
-                  <img src="${drink.image}" alt="${drink.name}" class="drink-image">
-                  <h3>${drink.name}</h3>
-                  <p>${drink.description}</p>
-                  <p>Price: $${drink.price}</p>
-                  <p>Sale: ${drink.sale}% off</p>
-                `;
+              <div class='wrapImg'><img src="${drink.image}" alt="${drink.name}" class="drink-image"></div>
+              <h3>${drink.name}</h3>
+              <p class='card-price'>Giá: <span>${drink.price},000 VNĐ</span></p>
+              <p class='card-sale'>Khuyến mãi: <span>${drink.sale}%</span></p>
+            `;
 
             // Gắn sự kiện click để mở modal
             drinkCard.onclick = () => showDrinkDetails(drink);
@@ -117,10 +131,10 @@ function showDrinkDetails(drink) {
   document.getElementById("detail-description").textContent = drink.description;
   document.getElementById(
     "detail-price"
-  ).textContent = `Price: $${drink.price}`;
+  ).innerHTML = `Giá: <span>${drink.price},000 VNĐ</span>`;
   document.getElementById(
     "detail-sale"
-  ).textContent = `Sale: ${drink.sale}% off`;
+  ).innerHTML = `Khuyến mãi: <span>${drink.sale}% </span>`;
 
   modal.style.display = "flex";
 
@@ -146,73 +160,179 @@ function addToCart(drink) {
   }
 
   localStorage.setItem("cart", JSON.stringify(cart));
-  alert(`${drink.name} has been added to your cart!`);
+  // alert(`${drink.name} has been added to your cart!`);
+
+  // Hiển thị thông báo
+  const messageBox = document.getElementById("cart-message");
+  const messageText = document.getElementById("cart-message-text");
+  const progressBar = document.getElementById("cart-progress");
+
+  messageText.textContent = `${drink.name} đã được thêm vào giỏ hàng!`;
+
+  // Reset thanh tiến trình
+  progressBar.style.transition = "none"; // Loại bỏ transition tạm thời
+  progressBar.style.width = "0%";
+
+  // Hiển thị thông báo
+  messageBox.classList.add("show");
+
+  // Kích hoạt lại thanh tiến trình sau khi DOM cập nhật
+  setTimeout(() => {
+    progressBar.style.transition = "width 2s linear"; // Thêm lại transition
+    progressBar.style.width = "100%"; // Chạy thanh tiến trình
+  }, 10); // Đợi 10ms để DOM cập nhật
+
+  // Ẩn thông báo sau 3 giây
+  setTimeout(() => {
+    messageBox.classList.remove("show");
+    progressBar.style.width = "0%"; // Reset thanh tiến trình
+  }, 2000);
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+  // Đảm bảo hàm updateQuantity() và các logic khác ở đây
 
-document.getElementById("view-cart-button").onclick = () => {
-  const cartModal = document.getElementById("cart-modal");
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-  const cartContainer = document.getElementById("cart-items-container");
+  // Cập nhật số lượng và tính lại giá
+  window.updateQuantity = function (index, change) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-  cartContainer.innerHTML = ""; // Xóa nội dung cũ
+    // Tìm sản phẩm trong giỏ hàng
+    const item = cart[index];
+    if (item) {
+      // Cập nhật số lượng của sản phẩm
+      item.quantity += change;
 
-  if (cart.length === 0) {
-    cartContainer.innerHTML = "<p>Your cart is empty.</p>";
-  } else {
-    cart.forEach((item, index) => {
-      const cartItem = document.createElement("div");
-      cartItem.className = "cart-item";
+      // Đảm bảo số lượng không nhỏ hơn 1
+      if (item.quantity < 1) {
+        item.quantity = 1;
+      }
 
-      cartItem.innerHTML = `
-        <div class="cart-item-card">
-          <img src="${item.image}" alt="${item.name}" class="cart-item-image">
-          <div class="cart-item-details">
-            <h3 class="cart-item-name">${item.name}</h3>
-            <p class="cart-item-price">
-              <span class="current-price">${item.price} VND</span>
-              <span class="old-price">${item.oldPrice || ''} VND</span>
-            </p>
-            <p class="cart-item-category">Quantity: ${item.quantity}</p>
-          </div>
-          <div class="cart-item-actions">
-            <button class="delete-button" data-index="${index}">🗑️</button>
-          </div>
-        </div>
-      `;
+      // Tính lại salePrice mỗi khi thay đổi số lượng
+      const salePrice =
+        (item.price * 1000 - (item.sale / 100) * item.price * 1000) *
+        item.quantity;
 
-      cartContainer.appendChild(cartItem);
-    });
+      // Lưu lại giỏ hàng trong localStorage
+      localStorage.setItem("cart", JSON.stringify(cart));
 
-    // Thêm sự kiện cho tất cả nút xóa
-    const deleteButtons = document.querySelectorAll(".delete-button");
-    deleteButtons.forEach((button) => {
-      button.onclick = (event) => {
-        const itemIndex = parseInt(event.target.getAttribute("data-index"));
-        deleteCartItem(itemIndex);
-      };
-    });
-  }
+      // Cập nhật lại số lượng hiển thị trên giao diện
+      document.getElementById(`quantity-${index}`).textContent = item.quantity;
 
-  cartModal.style.display = "flex";
-
-  // Đóng modal
-  document.getElementById("close-cart-modal").onclick = () => {
-    cartModal.style.display = "none";
+      // Cập nhật lại giá hiển thị trên giao diện
+      const priceElement = document.getElementById(`price-${index}`);
+      if (priceElement) {
+        priceElement.textContent = salePrice.toLocaleString("en-US") + " VND";
+      }
+    }
   };
-};
 
+  // Khi bạn hiển thị giỏ hàng
+  document.getElementById("view-cart-button").onclick = () => {
+    const cartModal = document.getElementById("cart-modal");
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartContainer = document.getElementById("cart-items-container");
+
+    cartContainer.innerHTML = ""; // Xóa nội dung cũ
+
+    if (cart.length === 0) {
+      cartContainer.innerHTML = "<p>Giỏ hàng của bạn đang trống.</p>";
+    } else {
+      cart.forEach((item, index) => {
+        const salePrice =
+          (item.price * 1000 - (item.sale / 100) * item.price * 1000) *
+          item.quantity;
+        const cartItem = document.createElement("div");
+        cartItem.className = "cart-item";
+
+        cartItem.innerHTML = `
+          <div class="cart-item-card">
+            <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+            <div class="cart-item-details">
+              <h3 class="cart-item-name">${item.name}</h3>
+              <p class="cart-item-price">
+                <span class="current-price" id="price-${index}">${salePrice.toLocaleString(
+          "en-US"
+        )} VND</span>
+                <span class="old-price">
+                  ${
+                    item.sale === 0
+                      ? ""
+                      : (item.price * 1000).toLocaleString("en-US") + " VND"
+                  }
+                </span>
+              </p>
+              <p class="cart-item-category">
+                <span class="quantity-change" onclick="updateQuantity(${index}, -1)">
+                  <i class="fa-solid fa-minus"></i>
+                </span>
+                Số lượng: <span id="quantity-${index}">${item.quantity}</span>
+                <span class="quantity-change" onclick="updateQuantity(${index}, 1)">
+                  <i class="fa-solid fa-plus"></i>
+                </span>
+              </p>
+            </div>
+            <div class="cart-item-actions">
+              <button class="delete-button" data-index="${index}">🗑️</button>
+            </div>
+          </div>
+        `;
+
+        cartContainer.appendChild(cartItem);
+      });
+
+      // Thêm sự kiện cho tất cả nút xóa
+      const deleteButtons = document.querySelectorAll(".delete-button");
+      deleteButtons.forEach((button) => {
+        button.onclick = (event) => {
+          const itemIndex = parseInt(event.target.getAttribute("data-index"));
+          deleteCartItem(itemIndex);
+        };
+      });
+    }
+
+    cartModal.style.display = "flex";
+
+    // Đóng modal
+    document.getElementById("close-cart-modal").onclick = () => {
+      cartModal.style.display = "none";
+    };
+  };
+});
+
+/////////////////////////////////////////////////////////////////
 // Hàm xóa sản phẩm khỏi giỏ hàng
 function deleteCartItem(index) {
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  cart.splice(index, 1); 
-  localStorage.setItem("cart", JSON.stringify(cart)); 
-  alert("Item removed from cart!");
-  document.getElementById("view-cart-button").click(); 
+  cart.splice(index, 1);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  // Hiển thị toast thông báo
+  const messageBox = document.getElementById("cart-message");
+  const messageText = document.getElementById("cart-message-text");
+  const progressBar = document.getElementById("cart-progress");
+
+  messageText.textContent = "Sản phẩm đã được xóa khỏi giỏ hàng!";
+
+  // Reset thanh tiến trình
+  progressBar.style.transition = "none"; // Loại bỏ transition tạm thời
+  progressBar.style.width = "0%";
+
+  // Hiển thị thông báo
+  messageBox.classList.add("show");
+
+  // Kích hoạt lại thanh tiến trình sau khi DOM cập nhật
+  setTimeout(() => {
+    progressBar.style.transition = "width 2s linear"; // Thêm lại transition
+    progressBar.style.width = "100%"; // Chạy thanh tiến trình
+  }, 10); // Đợi 10ms để DOM cập nhật
+
+  // Ẩn thông báo sau 3 giây
+  setTimeout(() => {
+    messageBox.classList.remove("show");
+    progressBar.style.width = "0%"; // Reset thanh tiến trình
+  }, 2000);
+  document.getElementById("view-cart-button").click();
 }
 
-  
-  
 const slider = document.querySelector(".clients-body");
 let btns = Array.from(document.querySelectorAll(".btns .btn"));
 
@@ -346,3 +466,97 @@ scrollBtn.onclick = function () {
     behavior: "smooth",
   });
 };
+
+// Hàm để hiển thị modal
+function showModal(cart, info) {
+  // Đóng modal
+  const cartModal = document.getElementById("cart-modal");
+  cartModal.style.display = "none";
+
+  // Lấy modal từ DOM
+  const modal = document.querySelector(".modal-checkout");
+
+  // Thêm nội dung cho modal
+  modal.innerHTML = modal.innerHTML = `
+  <div class="modal-content">
+   <div>
+    <span class="close">&times;</span>
+    <h2>Bạn đã thanh toán thành công</h2>
+    <div class='cart-item-info'>
+    <p class='cart-item-names'>Tên người đặt hàng: <span>${info.name}</span></p>
+    <p class='cart-item-phone'>Sđt người đặt hàng:<span> ${
+      info.phone
+    }</span></p>
+    </div>
+    <div class="modal-cart-items">
+      ${cart
+        .map(
+          (item) => `
+        <div class="cart-item-ck">
+          <div>${item.name}</div>
+          <div class='cart-item-ck-price'>SL: ${item.quantity}</div>
+          <div>Giá: ${item.price} VND</div>
+          <div>Thành tiền <br/> ${(
+            (item.price * 1000 - (item.sale / 100) * item.price * 1000) *
+            item.quantity
+          ).toLocaleString("en-US")} VNĐ</div>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+     
+    <p><strong>Tổng cộng: ${cart
+      .reduce(
+        (sum, item) =>
+          sum +
+          (item.price * 1000 - (item.sale / 100) * item.price * 1000) *
+            item.quantity,
+        0
+      )
+      .toLocaleString("en-US")} VND</strong></p>
+   </div>
+  </div>
+`;
+
+  // Thêm các class để hiển thị modal
+  modal.style.display = "block";
+  modal.classList.add("modal");
+
+  // Lấy các phần tử đóng modal
+  const closeButton = modal.querySelector(".close");
+  const closeModalButton = modal.querySelector(".close-button-ck");
+
+  // Gắn sự kiện đóng modal
+  closeButton.onclick = closeModal;
+  closeModalButton.onclick = closeModal;
+
+  // Đóng modal khi nhấn bên ngoài modal-content
+  window.onclick = (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+
+  function closeModal() {
+    modal.style.display = "none";
+    modal.classList.remove("modal");
+    modal.innerHTML = ""; // Xóa nội dung modal sau khi đóng
+  }
+}
+
+// Gắn sự kiện click vào nút "Thanh toán"
+const checkoutButton = document.getElementById("checkout-button");
+
+checkoutButton.addEventListener("click", () => {
+  // Dữ liệu hóa đơn
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const info = {
+    name,
+    phone,
+  };
+  // Gọi hàm hiển thị modal
+  showModal(cart, info);
+});
