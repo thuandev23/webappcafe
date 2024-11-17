@@ -108,8 +108,8 @@ body {
 
 .view-cart-button {
   position: fixed;
-  bottom: 80px; /* Cách mép dưới màn hình */
-  right: 20px;  /* Cách mép phải màn hình */
+  bottom: 150px; /* Cách mép dưới màn hình */
+  right: 10px;  /* Cách mép phải màn hình */
   width: 50px;
   height: 50px;
   background-color: #007bff;
@@ -197,8 +197,8 @@ body {
   width: 45px;
   height: 50px;
   background-color: #c6863c;
-  bottom: 50px;
-  right: 30px;
+  bottom: 30px;
+  right: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -209,6 +209,89 @@ body {
   cursor: pointer;
   opacity: 0;
   transition: opacity 1s, background 0.5s ease;
+}
+/* General container styling for cart items */
+.cart-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Image styling */
+.cart-item-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+/* Details container */
+.cart-item-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Name styling */
+.cart-item-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Price styling */
+.cart-item-price {
+  font-size: 14px;
+  margin: 0;
+  color: #d32f2f;
+}
+
+.cart-item-price .current-price {
+  font-weight: bold;
+}
+
+.cart-item-price .old-price {
+  text-decoration: line-through;
+  color: #aaa;
+  margin-left: 8px;
+}
+
+/* Category and featured styling */
+.cart-item-category,
+.cart-item-featured {
+  font-size: 12px;
+  color: #555;
+  margin: 0;
+}
+
+/* Action buttons */
+.cart-item-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-button,
+.delete-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.edit-button:hover {
+  color: #007bff;
+}
+
+.delete-button:hover {
+  color: #d32f2f;
 }
 
 .top-scroller.not-active {
@@ -254,7 +337,41 @@ body {
   overflow: hidden;
   transition: all 0.2s ease;
   display: none;
-  z-index: 2;
+  z-index: 100;
+}
+/* Button styling */
+.category-button {
+  background-color: #6f4e37; 
+  color: #fff; 
+  border: 2px solid #5a3b2e; 
+  border-radius: 8px;
+  padding: 10px 20px; 
+  margin: 10px; 
+  font-size: 16px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover effect */
+.category-button:hover {
+  background-color: #5a3b2e; 
+  color: #f5e8dc; 
+  transform: scale(1.05); 
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); 
+}
+.category-button.selected {
+  background-color: #4a2c20; 
+  color: #f5e8dc; 
+  border-color: #ffb84d;
+}
+
+/* Active button styling */
+.category-button:active {
+  background-color: #4a2c20; 
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3); 
+  transform: scale(0.98); 
 }
 
 @media (max-width: 970px) {

@@ -47,7 +47,12 @@ function loadCategoriesAndDrinks() {
             button.textContent = category.name;
             button.setAttribute("data-category-id", category.id);
             button.className = "category-button";
-            button.onclick = () => loadDrinksByCategory(category.id);
+            button.onclick = () => {
+              document.querySelectorAll(".category-button").forEach(btn => btn.classList.remove("selected"));
+              button.classList.add("selected");
+              loadDrinksByCategory(category.id);
+            };
+            
 
             categoryContainer.appendChild(button);
 
@@ -146,37 +151,66 @@ function addToCart(drink) {
 
 
 document.getElementById("view-cart-button").onclick = () => {
-    const cartModal = document.getElementById("cart-modal");
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const cartContainer = document.getElementById("cart-items-container");
-  
-    cartContainer.innerHTML = ""; // Xóa nội dung cũ
-  
-    if (cart.length === 0) {
-      cartContainer.innerHTML = "<p>Your cart is empty.</p>";
-    } else {
-      cart.forEach((item) => {
-        const cartItem = document.createElement("div");
-        cartItem.className = "cart-item";
-  
-        cartItem.innerHTML = `
-          <img src="${item.image}" alt="${item.name}" class="cart-item-image" style="width: 50px; height: 50px;">
-          <h4>${item.name}</h4>
-          <p>Price: $${item.price}</p>
-          <p>Quantity: ${item.quantity}</p>
-        `;
-  
-        cartContainer.appendChild(cartItem);
-      });
-    }
-  
-    cartModal.style.display = "flex";
-  
-    // Đóng modal
-    document.getElementById("close-cart-modal").onclick = () => {
-      cartModal.style.display = "none";
-    };
+  const cartModal = document.getElementById("cart-modal");
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const cartContainer = document.getElementById("cart-items-container");
+
+  cartContainer.innerHTML = ""; // Xóa nội dung cũ
+
+  if (cart.length === 0) {
+    cartContainer.innerHTML = "<p>Your cart is empty.</p>";
+  } else {
+    cart.forEach((item, index) => {
+      const cartItem = document.createElement("div");
+      cartItem.className = "cart-item";
+
+      cartItem.innerHTML = `
+        <div class="cart-item-card">
+          <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+          <div class="cart-item-details">
+            <h3 class="cart-item-name">${item.name}</h3>
+            <p class="cart-item-price">
+              <span class="current-price">${item.price} VND</span>
+              <span class="old-price">${item.oldPrice || ''} VND</span>
+            </p>
+            <p class="cart-item-category">Quantity: ${item.quantity}</p>
+          </div>
+          <div class="cart-item-actions">
+            <button class="delete-button" data-index="${index}">🗑️</button>
+          </div>
+        </div>
+      `;
+
+      cartContainer.appendChild(cartItem);
+    });
+
+    // Thêm sự kiện cho tất cả nút xóa
+    const deleteButtons = document.querySelectorAll(".delete-button");
+    deleteButtons.forEach((button) => {
+      button.onclick = (event) => {
+        const itemIndex = parseInt(event.target.getAttribute("data-index"));
+        deleteCartItem(itemIndex);
+      };
+    });
+  }
+
+  cartModal.style.display = "flex";
+
+  // Đóng modal
+  document.getElementById("close-cart-modal").onclick = () => {
+    cartModal.style.display = "none";
   };
+};
+
+// Hàm xóa sản phẩm khỏi giỏ hàng
+function deleteCartItem(index) {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  cart.splice(index, 1); 
+  localStorage.setItem("cart", JSON.stringify(cart)); 
+  alert("Item removed from cart!");
+  document.getElementById("view-cart-button").click(); 
+}
+
   
   
 const slider = document.querySelector(".clients-body");
