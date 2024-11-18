@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <script defer src="main.js"></script>
-
 </head>
 
 <body>
@@ -76,7 +75,6 @@
             <div class="content">
                 <h1>50% OFF</h1>
                 <h2>For Download App iCafe</h2>
-                <h4>Only from 1st Jan to 30th Jan 2045</h4>
                 <form action="">
                     <input type="text" placeholder="Your Email">
                     <button>Download now</button>
@@ -107,7 +105,14 @@
 
     </section>
 
-
+    <section class="clients">
+        <div class="clients-body">
+        </div>
+        <div class="btns">
+            <div class="btn active"></div>
+            <div class="btn"></div>
+        </div>
+    </section>
     <!-- ===============footer================ -->
     <footer>
         <div class="top-border-img"></div>
@@ -146,9 +151,6 @@
                     <h3>2.00 PM - 8.00 PM</h4>
                 </div>
             </div>
-
-
-
         </div>
         <hr>
         <div class="copy-rights">
@@ -185,20 +187,18 @@
         <span id="cart-message-text"></span>
         <div class="progress-bar" id="cart-progress"></div>
     </div>
-
-
     <div class="modal-checkout"></div>
     <!-- cart  -->
     <div id="cart-modal" class="cart-modal" style="display: none;">
         <div class="modal-content">
             <span id="close-cart-modal" class="close-button">&times;</span>
-            <h3 style="margin-bottom: 15px;">Đơn đặt hàng của bạn</h3>
+            <h3 style="margin-bottom: 15px;">Nước uống của bạn</h3>
             <div id="cart-items-container"></div>
             <div class="wrapInput">
                 <input type="text" id="name" name="name" placeholder="Nhập tên của bạn" />
                 <input type="number" id="phone" name="phone" placeholder="Nhập số điện thoại" />
             </div>
-            <button id="checkout-button" class="checkout-button">Thanh toán</button>
+            <button id="checkout-button" class="checkout-button">Đặt ngay</button>
         </div>
     </div>
 

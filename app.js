@@ -31,19 +31,14 @@ const db = getDatabase(app);
 // Lấy URL hiện tại
 const urlParams = new URLSearchParams(window.location.search);
 // Lấy giá trị tham số 'table'
-const tableNumber = urlParams.get('table');
+const tableNumber = urlParams.get("table");
 // Kiểm tra nếu số bàn tồn tại
 if (tableNumber) {
-    const body = document.querySelector('body');
-    const tableElement = document.createElement('h1');
-    tableElement.textContent = `Số bàn: ${tableNumber}`;
-    body.appendChild(tableElement);
-
-    const currentUrl = window.location.href;
-    const cleanUrl = currentUrl.split('?')[0];
-    window.history.replaceState(null, '', cleanUrl);
+  const currentUrl = window.location.href;
+  const cleanUrl = currentUrl.split("?")[0];
+  window.history.replaceState(null, "", cleanUrl);
 } else {
-    console.log("Không có số bàn trong URL");
+  showToast("Lỗi QR code");
 }
 
 // show drinking
@@ -501,10 +496,11 @@ function showModal(cart, info) {
   <div class="modal-content">
    <div>
     <span class="close">&times;</span>
-    <h2>Bạn đã thanh toán thành công</h2>
+    <h2>Bàn ${info.tableNumber}: Đặt nước thành công - ${info.timestamp}</h2>
+    <h3>Vui lòng với quầy để thanh toán hoặc quét mã QR trên bàn để thanh toán</h3>
     <div class='cart-item-info'>
-    <p class='cart-item-names'>Tên người đặt hàng: <span>${info.name}</span></p>
-    <p class='cart-item-phone'>Sđt người đặt hàng:<span> ${
+    <p class='cart-item-names'>Tên : <span>${info.name}</span></p>
+    <p class='cart-item-phone'>Số điện thoại:<span> ${
       info.phone
     }</span></p>
     </div>
@@ -568,15 +564,70 @@ function showModal(cart, info) {
 // Gắn sự kiện click vào nút "Thanh toán"
 const checkoutButton = document.getElementById("checkout-button");
 
-checkoutButton.addEventListener("click", () => {
-  // Dữ liệu hóa đơn
+checkoutButton.addEventListener("click", async () => {
+  // Lấy dữ liệu giỏ hàng và thông tin người dùng
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
-  const info = {
-    name,
-    phone,
-  };
-  // Gọi hàm hiển thị modal
-  showModal(cart, info);
+  if (cart.length === 0) {
+    showToast(
+      "Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm trước khi đặt hàng!"
+    );
+    return;
+  }
+  // Kiểm tra dữ liệu
+  if (!name || !phone) {
+    showToast("Vui lòng nhập đầy đủ họ tên và số điện thoại!");
+    return;
+  }
+
+  const info = {tableNumber, name, phone, cart, timestamp: Date.now() };
+
+  try {
+    // Gửi dữ liệu lên Firebase
+    await sendDataToFirebase(info);
+
+    showModal(cart, info);
+    JSON.parse(localStorage.removeItem("cart"));
+  } catch (error) {
+    console.error("Lỗi khi gửi dữ liệu lên Firebase:", error);
+  }
 });
+
+// Hàm gửi dữ liệu lên Firebase
+async function sendDataToFirebase(orderData) {
+  // Tạo một ref mới trong bảng "orders"
+  const orderId = `order_${Date.now()}`; // Tạo ID đơn hàng duy nhất
+  const orderRef = ref(db, `ordersweb/${orderId}`);
+
+  // Ghi dữ liệu vào ref
+  await set(orderRef, orderData);
+}
+
+// Hàm hiển thị thông báo toast
+function showToast(message) {
+  const messageBox = document.getElementById("cart-message");
+  const messageText = document.getElementById("cart-message-text");
+  const progressBar = document.getElementById("cart-progress");
+
+  messageText.textContent = message;
+
+  // Reset thanh tiến trình
+  progressBar.style.transition = "none";
+  progressBar.style.width = "0%";
+
+  // Hiển thị thông báo
+  messageBox.classList.add("show");
+
+  // Kích hoạt lại thanh tiến trình sau khi DOM cập nhật
+  setTimeout(() => {
+    progressBar.style.transition = "width 2s linear";
+    progressBar.style.width = "100%";
+  }, 10);
+
+  // Ẩn thông báo sau 3 giây
+  setTimeout(() => {
+    messageBox.classList.remove("show");
+    progressBar.style.width = "0%";
+  }, 3000);
+}
