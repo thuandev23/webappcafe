@@ -53,6 +53,7 @@ body {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -69,7 +70,53 @@ body {
   margin-top: 20px;
   transition: all linear 0.2s;
 }
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 90%; /* Adjust modal width for smaller devices */
+  }
 
+  h3 {
+    font-size: 20px; /* Reduce font size for smaller screens */
+  }
+
+  #detail-description,
+  #detail-price,
+  #detail-sale {
+    font-size: 14px; /* Adjust text size */
+  }
+
+  .add-to-cart-button {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    max-width: 95%; /* Further reduce width on small phones */
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  .modal-image {
+    max-height: 200px; /* Reduce image size */
+  }
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .cart-modal {
   position: fixed;
   top: 0;
@@ -81,17 +128,20 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 1001;
-  /* Trên nút view cart */
 }
 
 .modal-content {
   background: #fff;
+  border-radius: 10px;
+  max-width: 600px;
+  width: 90%; 
   padding: 20px;
-  border-radius: 5px;
-  text-align: center;
   position: relative;
-  width: 80%;
-  max-width: 500px;
+  text-align: center;
+  overflow-y: auto;
+  max-height: 90%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .close-button {
@@ -182,6 +232,7 @@ body {
   flex-wrap: wrap;
   gap: 20px;
   margin-top: 40px;
+  justify-content: center;
 }
 
 .drink-card {
@@ -208,7 +259,7 @@ body {
 }
 
 .drink-card:hover img {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 .drink-card {
@@ -226,7 +277,41 @@ body {
   height: 100%;
   transition: all linear 0.3s;
 }
+@media (max-width: 1024px) {
+  .wrapImg {
+    height: 200px; /* Adjust image container for tablets */
+  }
+  .drink-card {
+    width: 220px; /* Adjust card width for tablets */
+  }
+}
 
+@media (max-width: 768px) {
+  .wrapImg {
+    height: 180px; /* Adjust image container for mobile */
+  }
+  .drink-card {
+    width: 180px; /* Adjust card width for smaller devices */
+  }
+  .card-price, .card-sale {
+    font-size: 12px; /* Reduce font size on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapImg {
+    height: 150px; /* Further reduce height for very small screens */
+  }
+  .drink-card {
+    width: 150px; /* Compact card width for smaller mobile devices */
+  }
+  .card-price, .card-sale {
+    font-size: 11px;
+  }
+  .drink-card:hover {
+    transform: none; /* Disable scaling effect on small screens for better usability */
+  }
+}
 .top-scroller {
   position: fixed;
   z-index: 9999;
@@ -250,8 +335,8 @@ body {
 /* General container styling for cart items */
 .cart-item-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+    justify-content: space-between;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -356,7 +441,46 @@ body {
     bottom: 30px;
   }
 }
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95%; /* Use almost full width for small screens */
+    max-width: 320px; /* Ensure it fits iPhone 5 width */
+    padding: 15px; /* Reduce padding */
+  }
 
+  .cart-item-card {
+    flex-direction: column; /* Stack image and details vertically */
+    align-items: center;
+  }
+
+  .cart-item-image {
+    width: 100px; /* Larger image for readability */
+    height: 100px;
+  }
+
+  .cart-item-details {
+    text-align: center; /* Center align details for stacked layout */
+  }
+
+  .cart-item-name {
+    font-size: 12px; /* Adjust font size for small screens */
+  }
+
+  .cart-item-price,
+  .cart-item-category {
+    font-size: 12px; /* Reduce font size */
+  }
+
+  .quantity-change {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+
+  .checkout-button {
+    font-size: 14px;
+  }
+}
 /*/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\=/=\= */
 
 .top-bar {
@@ -2027,11 +2151,20 @@ footer .copy-rights h1 span {
 }
 
 .modal-image {
-  border-radius: 6px;
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
 }
 
 .wrapContent {
   margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 }
 
 #detail-name {
@@ -2159,9 +2292,9 @@ footer .copy-rights h1 span {
 }
 
 #cart-items-container {
-  min-height: 300px;
-  overflow: auto;
-  max-height: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .modal-checkout {
@@ -2184,7 +2317,7 @@ footer .copy-rights h1 span {
   margin: 15% auto;
   padding: 20px;
   border: 1px solid #ccc;
-  width: 50%;
+  width: 70%;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
@@ -2247,20 +2380,50 @@ footer .copy-rights h1 span {
 
 .wrapInput {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 10px;
   margin-top: 15px;
+  width: 100%;
 }
 
 .wrapInput input {
-  margin-bottom: 15px;
+  width: 100%; 
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
   outline: none;
-  padding: 8px 12px;
+  transition: border-color 0.3s ease-in-out;
+  box-sizing: border-box; 
+}
 
+.wrapInput input:focus {
+  border-color: #da9f5b; 
 }
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
-  margin: 0;
+  margin: 0; 
+}
+/* Responsive Design */
+@media (min-width: 768px) {
+  .wrapInput {
+    flex-direction: row; /* Align inputs horizontally on larger screens */
+    gap: 15px;
+  }
+
+  .wrapInput input {
+    width: calc(50% - 10px); /* Two inputs side by side with spacing */
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapInput {
+    flex-direction: column; /* Stack inputs for small devices */
+  }
+
+  input {
+    font-size: 14px; /* Adjust font size for smaller screens */
+  }
 }

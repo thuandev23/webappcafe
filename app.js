@@ -27,6 +27,26 @@ const app = initializeApp(firebaseConfig);
 // get ref to database services
 const db = getDatabase(app);
 
+// QR Code
+// Lấy URL hiện tại
+const urlParams = new URLSearchParams(window.location.search);
+// Lấy giá trị tham số 'table'
+const tableNumber = urlParams.get('table');
+// Kiểm tra nếu số bàn tồn tại
+if (tableNumber) {
+    const body = document.querySelector('body');
+    const tableElement = document.createElement('h1');
+    tableElement.textContent = `Số bàn: ${tableNumber}`;
+    body.appendChild(tableElement);
+
+    const currentUrl = window.location.href;
+    const cleanUrl = currentUrl.split('?')[0];
+    window.history.replaceState(null, '', cleanUrl);
+} else {
+    console.log("Không có số bàn trong URL");
+}
+
+// show drinking
 document.addEventListener("DOMContentLoaded", function () {
   loadCategoriesAndDrinks();
 });
