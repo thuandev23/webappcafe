@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", function () {
     cartContainer.innerHTML = ""; // Xóa nội dung cũ
 
     if (cart.length === 0) {
-      cartContainer.innerHTML = "<p>Giỏ hàng của bạn đang trống.</p>";
+      cartContainer.innerHTML = "<p>Bạn chưa có đồ uống nào !</p>";
     } else {
       cart.forEach((item, index) => {
         const salePrice =
@@ -544,23 +544,48 @@ function showModal(cart, info) {
   const closeModalButton = modal.querySelector(".close-button-ck");
 
   // Gắn sự kiện đóng modal
-  closeButton.onclick = closeModal;
-  closeModalButton.onclick = closeModal;
+  if (closeButton) {
+    closeButton.onclick = closeModal;
+  }
+  if (closeModalButton) {
+    closeModalButton.onclick = closeModal;
+  }
 
   // Đóng modal khi nhấn bên ngoài modal-content
   window.onclick = (event) => {
     if (event.target === modal) {
       closeModal();
+      
     }
   };
 
   function closeModal() {
     modal.style.display = "none";
     modal.classList.remove("modal");
+    JSON.parse(localStorage.removeItem("cart"));
     modal.innerHTML = ""; // Xóa nội dung modal sau khi đóng
   }
 }
+// Hàm kiểm tra số lần order và gửi thông báo
+async function checkOrderCountAndNotify(phone) {
+  // Truy vấn dữ liệu từ Firebase
+  const ordersRef = ref(db, "ordersweb"); // Đường dẫn tới bảng orders
+  const snapshot = await get(ordersRef);
 
+  if (snapshot.exists()) {
+    const orders = snapshot.val();
+    const orderCount = Object.values(orders).filter(
+      (order) => order.phone === phone
+    ).length;
+
+    // Nếu khách đã order 3 lần, gửi thông báo
+    if (orderCount >= 3) {
+      showToast(
+        "Bạn đã ngồi tại quán và đặt đồ uống "+$orderCount+" lần. Để có thêm những khuyến mãi thì bạn hãy tải App ICafe nhé"
+      );
+    }
+  }
+}
 // Gắn sự kiện click vào nút "Thanh toán"
 const checkoutButton = document.getElementById("checkout-button");
 
@@ -569,9 +594,10 @@ checkoutButton.addEventListener("click", async () => {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
+  const status = false;
   if (cart.length === 0) {
     showToast(
-      "Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm trước khi đặt hàng!"
+      "Chưa có đồ uống nào. Vui lòng thêm sản phẩm trước khi đặt đồ uống!"
     );
     return;
   }
@@ -581,14 +607,14 @@ checkoutButton.addEventListener("click", async () => {
     return;
   }
 
-  const info = {tableNumber, name, phone, cart, timestamp: Date.now() };
+  const info = {tableNumber, name, phone, cart, status, timestamp: Date.now() };
 
   try {
     // Gửi dữ liệu lên Firebase
     await sendDataToFirebase(info);
-
+    await checkOrderCountAndNotify(phone);
     showModal(cart, info);
-    JSON.parse(localStorage.removeItem("cart"));
+    
   } catch (error) {
     console.error("Lỗi khi gửi dữ liệu lên Firebase:", error);
   }
