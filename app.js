@@ -594,7 +594,16 @@ checkoutButton.addEventListener("click", async () => {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
+  var total = cart
+      .reduce(
+        (sum, item) =>
+          sum +
+          (item.price * 1000 - (item.sale / 100) * item.price * 1000) *
+            item.quantity,
+        0
+      );
   const status = false;
+  
   if (cart.length === 0) {
     showToast(
       "Chưa có đồ uống nào. Vui lòng thêm sản phẩm trước khi đặt đồ uống!"
@@ -607,7 +616,7 @@ checkoutButton.addEventListener("click", async () => {
     return;
   }
 
-  const info = {tableNumber, name, phone, cart, status, timestamp: Date.now() };
+  const info = {tableNumber, name, phone, cart, total, status, timestamp: Date.now() };
 
   try {
     // Gửi dữ liệu lên Firebase
