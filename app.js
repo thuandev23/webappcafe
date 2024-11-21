@@ -578,13 +578,13 @@ async function updatePaymentStatusInFirebase(info, orderId) {
       ...info,
       statusPayment: true,
     });
-    document.getElementById("checkout-button-pay").textContent = "Đã thanh toán";
+    document.getElementById("checkout-button-pay").textContent =
+      "Đã thanh toán";
   } catch (error) {
     console.error("Lỗi khi cập nhật trạng thái thanh toán:", error);
     showToast("Có lỗi xảy ra khi thanh toán. Vui lòng đến quầy để thanh toán");
   }
 }
-
 
 // Hàm kiểm tra số lần order và gửi thông báo
 async function checkOrderCountAndNotify(phone) {
@@ -637,7 +637,11 @@ checkoutButton.addEventListener("click", async () => {
     showToast("Vui lòng nhập đầy đủ họ tên và số điện thoại!");
     return;
   }
-
+  // check tableNumber null
+  if (tableNumber === null) {
+    showToast("Vui lòng quét lại mã QR!");
+    return;
+  }
   const info = {
     tableNumber,
     name,
@@ -648,7 +652,7 @@ checkoutButton.addEventListener("click", async () => {
     statusPayment,
     timestamp: Date.now(),
   };
-  const orderId = `order_${Date.now()}`; 
+  const orderId = `order_${Date.now()}`;
   try {
     // Gửi dữ liệu lên Firebase
     await sendDataToFirebase(info, orderId);
