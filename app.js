@@ -38,7 +38,7 @@ if (tableNumber) {
   const cleanUrl = currentUrl.split("?")[0];
   window.history.replaceState(null, "", cleanUrl);
 } else {
-  showToast("Lỗi QR code");
+  showToast("Lỗi QR ! Vui lòng quét lại mã QR.");
 }
 
 // show drinking
@@ -483,7 +483,7 @@ scrollBtn.onclick = function () {
 };
 
 // Hàm để hiển thị modal
-function showModal(cart, info) {
+function showModal(cart, info, orderId) {
   // Đóng modal
   const cartModal = document.getElementById("cart-modal");
   cartModal.style.display = "none";
@@ -497,12 +497,9 @@ function showModal(cart, info) {
    <div>
     <span class="close">&times;</span>
     <h2>Bàn ${info.tableNumber}: Đặt nước thành công - ${info.timestamp}</h2>
-    <h3>Vui lòng với quầy để thanh toán hoặc quét mã QR trên bàn để thanh toán</h3>
     <div class='cart-item-info'>
     <p class='cart-item-names'>Tên : <span>${info.name}</span></p>
-    <p class='cart-item-phone'>Số điện thoại:<span> ${
-      info.phone
-    }</span></p>
+    <p class='cart-item-phone'>Số điện thoại:<span> ${info.phone}</span></p>
     </div>
     <div class="modal-cart-items">
       ${cart
@@ -515,7 +512,7 @@ function showModal(cart, info) {
           <div>Thành tiền <br/> ${(
             (item.price * 1000 - (item.sale / 100) * item.price * 1000) *
             item.quantity
-          ).toLocaleString("en-US")} VNĐ</div>
+          ).toLocaleString("en-US")}VNĐ</div>
         </div>
       `
         )
@@ -531,6 +528,8 @@ function showModal(cart, info) {
         0
       )
       .toLocaleString("en-US")} VND</strong></p>
+    <h3>Vui lòng với quầy để thanh toán <strong>hoặc</strong></h3>
+    <button id="checkout-button-pay" class="checkout-button checkout-button-pay">Thanh toán ngay</button>
    </div>
   </div>
 `;
@@ -555,7 +554,6 @@ function showModal(cart, info) {
   window.onclick = (event) => {
     if (event.target === modal) {
       closeModal();
-      
     }
   };
 
@@ -565,7 +563,29 @@ function showModal(cart, info) {
     JSON.parse(localStorage.removeItem("cart"));
     modal.innerHTML = ""; // Xóa nội dung modal sau khi đóng
   }
+  // Attach event listener to "Thanh toán ngay" button
+  const checkoutPayButton = modal.querySelector("#checkout-button-pay");
+  if (checkoutPayButton) {
+    checkoutPayButton.addEventListener("click", () =>
+      updatePaymentStatusInFirebase(info, orderId)
+    );
+  }
 }
+async function updatePaymentStatusInFirebase(info, orderId) {
+  try {
+    const dbRef = ref(db, `ordersweb/${orderId}`);
+    await set(dbRef, {
+      ...info,
+      statusPayment: true,
+    });
+    document.getElementById("checkout-button-pay").textContent = "Đã thanh toán";
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái thanh toán:", error);
+    showToast("Có lỗi xảy ra khi thanh toán. Vui lòng đến quầy để thanh toán");
+  }
+}
+
+
 // Hàm kiểm tra số lần order và gửi thông báo
 async function checkOrderCountAndNotify(phone) {
   // Truy vấn dữ liệu từ Firebase
@@ -581,7 +601,9 @@ async function checkOrderCountAndNotify(phone) {
     // Nếu khách đã order 3 lần, gửi thông báo
     if (orderCount >= 3) {
       showToast(
-        "Bạn đã ngồi tại quán và đặt đồ uống "+$orderCount+" lần. Để có thêm những khuyến mãi thì bạn hãy tải App ICafe nhé"
+        "Bạn đã ngồi tại quán và đặt đồ uống " +
+          $orderCount +
+          " lần. Để có thêm những khuyến mãi thì bạn hãy tải App ICafe nhé"
       );
     }
   }
@@ -594,16 +616,16 @@ checkoutButton.addEventListener("click", async () => {
   const cart = JSON.parse(localStorage.getItem("cart")) || [];
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
-  var total = cart
-      .reduce(
-        (sum, item) =>
-          sum +
-          (item.price * 1000 - (item.sale / 100) * item.price * 1000) *
-            item.quantity,
-        0
-      );
-  const status = false;
-  
+  var total = cart.reduce(
+    (sum, item) =>
+      sum +
+      (item.price * 1000 - (item.sale / 100) * item.price * 1000) *
+        item.quantity,
+    0
+  );
+  const statusOrder = false;
+  const statusPayment = false;
+
   if (cart.length === 0) {
     showToast(
       "Chưa có đồ uống nào. Vui lòng thêm sản phẩm trước khi đặt đồ uống!"
@@ -616,26 +638,31 @@ checkoutButton.addEventListener("click", async () => {
     return;
   }
 
-  const info = {tableNumber, name, phone, cart, total, status, timestamp: Date.now() };
-
+  const info = {
+    tableNumber,
+    name,
+    phone,
+    cart,
+    total,
+    statusOrder,
+    statusPayment,
+    timestamp: Date.now(),
+  };
+  const orderId = `order_${Date.now()}`; 
   try {
     // Gửi dữ liệu lên Firebase
-    await sendDataToFirebase(info);
-    await checkOrderCountAndNotify(phone);
-    showModal(cart, info);
-    
+    await sendDataToFirebase(info, orderId);
+    // await checkOrderCountAndNotify(phone);
+    showModal(cart, info, orderId);
   } catch (error) {
     console.error("Lỗi khi gửi dữ liệu lên Firebase:", error);
   }
 });
 
 // Hàm gửi dữ liệu lên Firebase
-async function sendDataToFirebase(orderData) {
+async function sendDataToFirebase(orderData, orderId) {
   // Tạo một ref mới trong bảng "orders"
-  const orderId = `order_${Date.now()}`; // Tạo ID đơn hàng duy nhất
   const orderRef = ref(db, `ordersweb/${orderId}`);
-
-  // Ghi dữ liệu vào ref
   await set(orderRef, orderData);
 }
 

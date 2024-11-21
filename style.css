@@ -135,7 +135,7 @@ body {
   border-radius: 10px;
   max-width: 600px;
   width: 90%; 
-  padding: 20px;
+  padding: 10px;
   position: relative;
   text-align: center;
   overflow-y: auto;
@@ -204,7 +204,7 @@ body {
 
 .modal-content {
   background: #fff;
-  padding: 20px;
+  padding: 10px;
   border-radius: 5px;
   text-align: center;
   position: relative;
@@ -453,8 +453,8 @@ body {
 @media (max-width: 480px) {
   .modal-content {
     width: 95%; /* Use almost full width for small screens */
-    max-width: 320px; /* Ensure it fits iPhone 5 width */
-    padding: 15px; /* Reduce padding */
+    max-width: 420px; /* Ensure it fits iPhone 5 width */
+    padding: 10px; /* Reduce padding */
   }
 
   .cart-item-card {
@@ -499,7 +499,7 @@ body {
 @media (max-width: 365px) {
   .modal-content {
     width: 97%; /* Use almost full width for small screens */
-    max-width: 320px; /* Ensure it fits iPhone 5 width */
+    max-width: 420px; /* Ensure it fits iPhone 5 width */
     padding: 10px; /* Reduce padding */
   }
 
@@ -2424,7 +2424,7 @@ footer .copy-rights h1 span {
 }
 
 .modal-cart-items {
-  margin-top: 55px;
+  margin-top: 35px;
 }
 
 .cart-item-ck div {
