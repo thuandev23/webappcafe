@@ -45,37 +45,37 @@ if (tableNumber) {
 document.addEventListener("DOMContentLoaded", function () {
   loadCategoriesAndDrinks();
 });
-
 function loadCategoriesAndDrinks() {
   const dbRef = ref(db);
 
   get(child(dbRef, "category"))
     .then((snapshot) => {
       if (snapshot.exists()) {
-        const categories = snapshot.val();
+        const categories = Object.values(snapshot.val() || {});
         const categoryContainer = document.getElementById("category-container");
 
-        // Hiển thị danh mục đầu tiên và sản phẩm tương ứng
         categories.forEach((category, index) => {
-          if (category) {
-            const button = document.createElement("button");
-            button.textContent = category.name;
-            button.setAttribute("data-category-id", category.id);
-            button.className = "category-button";
-            button.onclick = () => {
-              document
-                .querySelectorAll(".category-button")
-                .forEach((btn) => btn.classList.remove("selected"));
-              button.classList.add("selected");
-              loadDrinksByCategory(category.id);
-            };
+          if (!category || !category.id || !category.name) {
+            console.warn("Invalid category data:", category);
+            return;
+          }
 
-            categoryContainer.appendChild(button);
+          const button = document.createElement("button");
+          button.textContent = category.name;
+          button.setAttribute("data-category-id", category.id);
+          button.className = "category-button";
+          button.onclick = () => {
+            document
+              .querySelectorAll(".category-button")
+              .forEach((btn) => btn.classList.remove("selected"));
+            button.classList.add("selected");
+            loadDrinksByCategory(category.id);
+          };
 
-            // Load sản phẩm của danh mục đầu tiên
-            if (index === 1) {
-              loadDrinksByCategory(category.id);
-            }
+          categoryContainer.appendChild(button);
+
+          if (index === 0) {
+            loadDrinksByCategory(category.id); // Load danh mục đầu tiên
           }
         });
       } else {
@@ -89,12 +89,10 @@ function loadCategoriesAndDrinks() {
 
 function loadDrinksByCategory(categoryId) {
   const dbRef = ref(db);
-
-  // Hiển thị Skeleton loader trước khi dữ liệu được tải
   const drinkContainer = document.getElementById("drink-container");
-  drinkContainer.innerHTML = ""; // Clear previous content
+  drinkContainer.innerHTML = "";
+
   for (let i = 0; i < 5; i++) {
-    // Hiển thị 5 skeleton
     const skeletonCard = document.createElement("div");
     skeletonCard.className = "drink-card";
     skeletonCard.innerHTML = `
@@ -109,11 +107,17 @@ function loadDrinksByCategory(categoryId) {
   get(child(dbRef, "drink"))
     .then((snapshot) => {
       if (snapshot.exists()) {
-        const drinks = snapshot.val();
-        drinkContainer.innerHTML = ""; // Xóa skeleton
+        const drinks = Object.values(snapshot.val() || {});
+        drinkContainer.innerHTML = "";
 
         drinks.forEach((drink) => {
-          if (drink && drink.category_id === categoryId) {
+          if (
+            drink &&
+            String(drink.category_id) === String(categoryId) &&
+            drink.name &&
+            drink.image &&
+            drink.price
+          ) {
             const drinkCard = document.createElement("div");
             drinkCard.className = "drink-card";
 
@@ -121,13 +125,13 @@ function loadDrinksByCategory(categoryId) {
               <div class='wrapImg'><img src="${drink.image}" alt="${drink.name}" class="drink-image"></div>
               <h3>${drink.name}</h3>
               <p class='card-price'>Giá: <span>${drink.price},000 VNĐ</span></p>
-              <p class='card-sale'>Khuyến mãi: <span>${drink.sale}%</span></p>
+              <p class='card-sale'>Khuyến mãi: <span>${drink.sale || 0}%</span></p>
             `;
 
-            // Gắn sự kiện click để mở modal
             drinkCard.onclick = () => showDrinkDetails(drink);
-
             drinkContainer.appendChild(drinkCard);
+          } else {
+            console.warn("Invalid drink data:", drink);
           }
         });
       } else {
@@ -138,6 +142,7 @@ function loadDrinksByCategory(categoryId) {
       console.error("Error fetching drinks:", error);
     });
 }
+
 
 function showDrinkDetails(drink) {
   const modal = document.getElementById("drink-detail-modal");
